@@ -9,9 +9,7 @@ How to download:
 Features:
 
 * Text recognition can be used with multiple implementations:
-    * OCR open api.
-    * Microsoft Azure Cognitive Services.
-    * Google Vision.
+    * [OCR.Space API](https://ocr.space/ocrapi)
 
 * Image and text is added automactly to the ClipBoard.
 

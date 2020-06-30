@@ -17,15 +17,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using OCRInteroperability;
-using OpenOCRApi;
 using Brushes = System.Windows.Media.Brushes;
 using Pen = System.Windows.Media.Pen;
 using Point = System.Windows.Point;
 
 namespace ThothSnipping {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window {
 
         private Point startMousePosition;
@@ -35,7 +31,7 @@ namespace ThothSnipping {
         private ImageToTextConverter imageToTextConverter;
 
         public MainWindow() {
-            imageToTextConverter = new OpenOCRApiImageToTextConverter();
+            imageToTextConverter = OCRFactory.GetOCRSpaceImageToTextConverter();
             InitializeComponent();
             Cursor = Cursors.Cross;
             WindowState = WindowState.Maximized;
