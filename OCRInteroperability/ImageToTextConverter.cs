@@ -1,7 +1,7 @@
-using System.Drawing;
+using System.Threading.Tasks;
 
 namespace OCRInteroperability {
     public interface ImageToTextConverter {
-        string Convert(Bitmap bitmap);
+        Task<string> Convert(byte[] imageData);
     }
 }

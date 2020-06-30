@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using OCRInteroperability;
+using OpenOCRApi;
 using Brushes = System.Windows.Media.Brushes;
 using Pen = System.Windows.Media.Pen;
 using Point = System.Windows.Point;
@@ -34,6 +35,7 @@ namespace ThothSnipping {
         private ImageToTextConverter imageToTextConverter;
 
         public MainWindow() {
+            imageToTextConverter = new OpenOCRApiImageToTextConverter();
             InitializeComponent();
             Cursor = Cursors.Cross;
             WindowState = WindowState.Maximized;
@@ -67,7 +69,7 @@ namespace ThothSnipping {
             }
         }
 
-        private void Snip() {
+        private async void Snip() {
             var deltaX = -3.75;
             var deltaY = -3.75;
             using (var bitmap = new Bitmap(Convert.ToInt32(selectedRectangle.Width +  deltaX), Convert.ToInt32(selectedRectangle.Height + deltaY))) {
@@ -78,8 +80,11 @@ namespace ThothSnipping {
                     bitmap.Save("C:\\Users\\david\\Desktop\\Screenshots\\" + filename);
                     Opacity = 0.1;
                     AddSelectedImageToClipBoard(bitmap);
-                    var text = imageToTextConverter.Convert(bitmap);
+                    var imageConverter = new ImageConverter();
+                    var imageData = (byte[])imageConverter.ConvertTo(bitmap, typeof(byte[]));
+                    var text = await imageToTextConverter.Convert(imageData);
                     Console.WriteLine(text);
+                    AddSelectedImageTextToClipBoard(text);
                 }
             }
         }
@@ -88,6 +93,10 @@ namespace ThothSnipping {
             var intPtr = bitmap.GetHbitmap();
             var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(intPtr, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             Clipboard.SetImage(bitmapSource);
+        }
+        
+        private static void AddSelectedImageTextToClipBoard(string text) {
+            Clipboard.SetText(text);
         }
     }
 }

@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThothSnipping", "ThothSnipp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OCRInteroperability", "OCRInteroperability\OCRInteroperability.csproj", "{0926C82D-4D17-4187-9355-9C1CE186F9F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenOCRApi", "OpenOCRApi\OpenOCRApi.csproj", "{7E4AF343-A9F1-4AFD-B71B-17A6A7EDF61D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{0926C82D-4D17-4187-9355-9C1CE186F9F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0926C82D-4D17-4187-9355-9C1CE186F9F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0926C82D-4D17-4187-9355-9C1CE186F9F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E4AF343-A9F1-4AFD-B71B-17A6A7EDF61D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E4AF343-A9F1-4AFD-B71B-17A6A7EDF61D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E4AF343-A9F1-4AFD-B71B-17A6A7EDF61D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E4AF343-A9F1-4AFD-B71B-17A6A7EDF61D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

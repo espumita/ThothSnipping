@@ -5,13 +5,20 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
         <UseWPF>true</UseWPF>
     </PropertyGroup>
-
     <ItemGroup>
       <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="OCRInteroperability\OCRInteroperability.csproj" />
+      <ProjectReference Include="OpenOCRApi\OpenOCRApi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="OCRInteroperability\bin\Debug" />
+      <Folder Include="OCRInteroperability\obj\Debug" />
+      <Folder Include="OpenOCRApi\bin\Debug" />
+      <Folder Include="OpenOCRApi\obj\Debug" />
     </ItemGroup>
 
 </Project>
