@@ -4,7 +4,7 @@
         Title="MainWindow" AllowsTransparency="True" 
         WindowStyle="None" Background="Transparent">
     <Canvas >
-        <Path Stroke="Black" Fill="White" Opacity=".5" >
+        <Path Stroke="Black" Fill="Black" Opacity=".01" >
             <Path.Data>
                 <CombinedGeometry GeometryCombineMode="Exclude">
                     <CombinedGeometry.Geometry1>

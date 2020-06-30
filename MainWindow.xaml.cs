@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +15,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Brushes = System.Windows.Media.Brushes;
+using Pen = System.Windows.Media.Pen;
+using Point = System.Windows.Point;
 
 namespace ThothSnipping {
     /// <summary>
@@ -23,9 +28,11 @@ namespace ThothSnipping {
         private Point startMousePosition;
         private Point endMousePosition;
         private bool IsSnipping;
+        private Rect selectedRectangle;
 
         public MainWindow() {
             InitializeComponent();
+            Cursor = Cursors.Cross;
             WindowState = WindowState.Maximized;
         }
 
@@ -37,6 +44,7 @@ namespace ThothSnipping {
         protected override void OnMouseMove(MouseEventArgs eventArgs) {
             if (IsSnipping) {
                 endMousePosition = eventArgs.GetPosition(this);
+                selectedRectangle = new Rect(startMousePosition, endMousePosition);
                 InvalidateVisual();
             }
         }
@@ -44,6 +52,7 @@ namespace ThothSnipping {
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
             if (IsSnipping) {
                 endMousePosition = eventArgs.GetPosition(this);
+                selectedRectangle = new Rect(startMousePosition, endMousePosition);
                 Snip();                
                 IsSnipping = false;
             }
@@ -51,12 +60,22 @@ namespace ThothSnipping {
 
         protected override void OnRender(DrawingContext drawingContext) {
             if (startMousePosition != null) {
-                drawingContext.DrawRectangle(Brushes.Transparent, new Pen(Brushes.Red, 2), new Rect(startMousePosition, endMousePosition));
+                drawingContext.DrawRectangle(Brushes.Transparent, new Pen(Brushes.Red, 2), selectedRectangle);
             }
         }
 
         private void Snip() {
-            Console.WriteLine("Snip!!!");
+            var deltaX = -3.5;
+            var deltaY = -3.5;
+            using (var bitmap = new Bitmap(Convert.ToInt32(selectedRectangle.Width +  deltaX), Convert.ToInt32(selectedRectangle.Height + deltaY))) {
+                using (var graphics = Graphics.FromImage(bitmap)) {
+                    String filename = "ScreenCapture-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
+                    Opacity = .0;
+                    graphics.CopyFromScreen((Convert.ToInt32(selectedRectangle.X + deltaX)), Convert.ToInt32(selectedRectangle.Y + deltaY), 0, 0, bitmap.Size);
+                    bitmap.Save("C:\\Screenshots\\" + filename);
+                    Opacity = 0.1;
+                }
+            }
         }
     }
 }
