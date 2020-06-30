@@ -11,10 +11,12 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using OCRInteroperability;
 using Brushes = System.Windows.Media.Brushes;
 using Pen = System.Windows.Media.Pen;
 using Point = System.Windows.Point;
@@ -29,6 +31,7 @@ namespace ThothSnipping {
         private Point endMousePosition;
         private bool IsSnipping;
         private Rect selectedRectangle;
+        private ImageToTextConverter imageToTextConverter;
 
         public MainWindow() {
             InitializeComponent();
@@ -65,17 +68,26 @@ namespace ThothSnipping {
         }
 
         private void Snip() {
-            var deltaX = -3.5;
-            var deltaY = -3.5;
+            var deltaX = -3.75;
+            var deltaY = -3.75;
             using (var bitmap = new Bitmap(Convert.ToInt32(selectedRectangle.Width +  deltaX), Convert.ToInt32(selectedRectangle.Height + deltaY))) {
                 using (var graphics = Graphics.FromImage(bitmap)) {
-                    String filename = "ScreenCapture-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
+                    String filename = "ThothSnipping-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
                     Opacity = .0;
                     graphics.CopyFromScreen((Convert.ToInt32(selectedRectangle.X + deltaX)), Convert.ToInt32(selectedRectangle.Y + deltaY), 0, 0, bitmap.Size);
-                    bitmap.Save("C:\\Screenshots\\" + filename);
+                    bitmap.Save("C:\\Users\\david\\Desktop\\Screenshots\\" + filename);
                     Opacity = 0.1;
+                    AddSelectedImageToClipBoard(bitmap);
+                    var text = imageToTextConverter.Convert(bitmap);
+                    Console.WriteLine(text);
                 }
             }
+        }
+
+        private static void AddSelectedImageToClipBoard(Bitmap bitmap) {
+            var intPtr = bitmap.GetHbitmap();
+            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(intPtr, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            Clipboard.SetImage(bitmapSource);
         }
     }
 }
