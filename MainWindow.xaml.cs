@@ -1,29 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using OCRInteroperability;
 using Brushes = System.Windows.Media.Brushes;
 using Pen = System.Windows.Media.Pen;
 using Point = System.Windows.Point;
+using Size = System.Drawing.Size;
 
 namespace ThothSnipping {
     public partial class MainWindow : Window {
-
+        
+        private const double DeltaX = -3.75;
+        private const double DeltaY = -3.75;
         private Point startMousePosition;
         private Point endMousePosition;
         private bool IsSnipping;
@@ -43,56 +36,69 @@ namespace ThothSnipping {
         }
 
         protected override void OnMouseMove(MouseEventArgs eventArgs) {
-            if (IsSnipping) {
-                endMousePosition = eventArgs.GetPosition(this);
-                selectedRectangle = new Rect(startMousePosition, endMousePosition);
-                InvalidateVisual();
-            }
-        }
-
-        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
-            if (IsSnipping) {
-                endMousePosition = eventArgs.GetPosition(this);
-                selectedRectangle = new Rect(startMousePosition, endMousePosition);
-                Snip();                
-                IsSnipping = false;
-            }
+            if (!IsSnipping) return;
+            endMousePosition = eventArgs.GetPosition(this);
+            selectedRectangle = new Rect(startMousePosition, endMousePosition);
+            InvalidateVisual();
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
-            if (startMousePosition != null) {
-                drawingContext.DrawRectangle(Brushes.Transparent, new Pen(Brushes.Red, 2), selectedRectangle);
-            }
+            drawingContext.DrawRectangle(Brushes.Transparent, new Pen(Brushes.Red, 2), selectedRectangle);
+        }
+
+        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
+            if (!IsSnipping) return;
+            endMousePosition = eventArgs.GetPosition(this);
+            selectedRectangle = new Rect(startMousePosition, endMousePosition);
+            Snip();                
+            IsSnipping = false;
         }
 
         private async void Snip() {
-            var deltaX = -3.75;
-            var deltaY = -3.75;
-            using (var bitmap = new Bitmap(Convert.ToInt32(selectedRectangle.Width +  deltaX), Convert.ToInt32(selectedRectangle.Height + deltaY))) {
+            using (var bitmap = BitmapWithSelectedRectangleSize()) {
                 using (var graphics = Graphics.FromImage(bitmap)) {
-                    String filename = "ThothSnipping-" + DateTime.Now.ToString("ddMMyyyy-hhmmss") + ".png";
-                    Opacity = .0;
-                    graphics.CopyFromScreen((Convert.ToInt32(selectedRectangle.X + deltaX)), Convert.ToInt32(selectedRectangle.Y + deltaY), 0, 0, bitmap.Size);
-                    bitmap.Save("C:\\Users\\david\\Desktop\\Screenshots\\" + filename);
-                    Opacity = 0.1;
-                    AddSelectedImageToClipBoard(bitmap);
-                    var imageConverter = new ImageConverter();
-                    var imageData = (byte[])imageConverter.ConvertTo(bitmap, typeof(byte[]));
-                    var text = await imageToTextConverter.Convert(imageData);
-                    Console.WriteLine(text);
-                    AddSelectedImageTextToClipBoard(text);
+                    SnipOf(bitmap.Size, graphics);
+                    AddImageToClipBoard(bitmap);
+                    var imageAsText = await GetTextFrom(bitmap);
+                    AddTextToClipBoard(imageAsText);
                 }
             }
         }
 
-        private static void AddSelectedImageToClipBoard(Bitmap bitmap) {
-            var intPtr = bitmap.GetHbitmap();
-            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(intPtr, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+        private Bitmap BitmapWithSelectedRectangleSize() {
+            var width = Convert.ToInt32(selectedRectangle.Width +  DeltaX);
+            var height = Convert.ToInt32(selectedRectangle.Height + DeltaY);
+            return new Bitmap(width, height);
+        }
+
+        private void SnipOf(Size bitmapSize, Graphics graphics) {
+            Opacity = .0;
+            var x = Convert.ToInt32(selectedRectangle.X + DeltaX);
+            var y = Convert.ToInt32(selectedRectangle.Y + DeltaY);
+            graphics.CopyFromScreen(x, y, 0, 0, bitmapSize);
+            Opacity = 0.1;
+        }
+
+        private async Task<string> GetTextFrom(Bitmap bitmap) {
+            var imageInByteArray = ConvertToByteArray(bitmap);
+            var text = await imageToTextConverter.Convert(imageInByteArray);
+            return text;
+        }
+
+        private static void AddImageToClipBoard(Bitmap bitmap) {
+            var hBitmap = bitmap.GetHbitmap();
+            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
             Clipboard.SetImage(bitmapSource);
         }
-        
-        private static void AddSelectedImageTextToClipBoard(string text) {
+
+        private static byte[] ConvertToByteArray(Bitmap bitmap) {
+            var imageConverter = new ImageConverter();
+            return (byte[])imageConverter.ConvertTo(bitmap, typeof(byte[]));
+        }
+
+        private static void AddTextToClipBoard(string text) {
             Clipboard.SetText(text);
         }
+        
     }
 }
