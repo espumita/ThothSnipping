@@ -1,16 +1,10 @@
-ThothSnipping
+# ThothSnipping
 
-Is snipping tool with an OCR integration.
+ThothSnipping is a snipping tool with an OCR integration, builded in top of netcore 3.1 with WPF.
 
-Builded in top of netcore 3.1 with WPF.
+### Features:
 
-How to download:
+* Text and Image added automatically to the Clipboard.
 
-Features:
-
-* Text recognition can be used with multiple implementations:
+* Text recognition implementations:
     * [OCR.Space API](https://ocr.space/ocrapi)
-
-* Image and text is added automactly to the ClipBoard.
-
-Feel free to use or contribute with another implementation. For that just fork this repository, implement the ImageToTextConverter interface.
