@@ -13,18 +13,6 @@
       <ProjectReference Include="OCRInteroperability\OCRInteroperability.csproj" />
       <ProjectReference Include="OCRS.space\OCRS.space.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="OCRInteroperability\bin\Debug" />
-      <Folder Include="OCRInteroperability\obj\Debug" />
-      <Folder Include="OpenOCRApi\bin\Debug" />
-      <Folder Include="OpenOCRApi\obj\Debug" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="OCRS.space\OpenOCRApiImageToTextConverter.cs">
-        <Link>OpenOCRApi\OpenOCRApiImageToTextConverter.cs</Link>
-      </Compile>
-    </ItemGroup>
+    
 
 </Project>

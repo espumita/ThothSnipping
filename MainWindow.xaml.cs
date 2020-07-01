@@ -1,26 +1,17 @@
-﻿using System;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using OCRInteroperability;
 using Brushes = System.Windows.Media.Brushes;
 using Pen = System.Windows.Media.Pen;
-using Point = System.Windows.Point;
-using Size = System.Drawing.Size;
 
 namespace ThothSnipping {
     public partial class MainWindow : Window {
         
-        private const double DeltaX = -3.75;
-        private const double DeltaY = -3.75;
-        private Point startMousePosition;
-        private Point endMousePosition;
-        private bool IsSnipping;
-        private Rect selectedRectangle;
+        private bool userIsSnipping;
+        private Snip snip;
         private ImageToTextConverter imageToTextConverter;
 
         public MainWindow() {
@@ -31,73 +22,66 @@ namespace ThothSnipping {
         }
 
         protected override void OnPreviewMouseLeftButtonDown(MouseButtonEventArgs eventArgs) {
-            IsSnipping = true;
-            startMousePosition = eventArgs.GetPosition(this);
+            UserStartsSnipping(eventArgs);
+        }
+
+        private void UserStartsSnipping(MouseButtonEventArgs eventArgs) {
+            userIsSnipping = true;
+            var startPosition = eventArgs.GetPosition(this);
+            snip = Snip.WithStartPositionIn(startPosition);
         }
 
         protected override void OnMouseMove(MouseEventArgs eventArgs) {
-            if (!IsSnipping) return;
-            endMousePosition = eventArgs.GetPosition(this);
-            selectedRectangle = new Rect(startMousePosition, endMousePosition);
+            if (!userIsSnipping) return;
+            RecalculateSnipRectangle(eventArgs);
+            ReRenderWindow();
+        }
+
+        private void RecalculateSnipRectangle(MouseEventArgs eventArgs) {
+            var endPosition = eventArgs.GetPosition(this);
+            snip.EndPosition(endPosition);
+        }
+
+        private void ReRenderWindow() {
             InvalidateVisual();
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
-            drawingContext.DrawRectangle(Brushes.Transparent, new Pen(Brushes.Red, 2), selectedRectangle);
+            var pen = new Pen(Brushes.Red, 2);
+            var rectangle = snip.Rectangle();
+            drawingContext.DrawRectangle(Brushes.Transparent, pen, rectangle);
         }
 
         protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
-            if (!IsSnipping) return;
-            endMousePosition = eventArgs.GetPosition(this);
-            selectedRectangle = new Rect(startMousePosition, endMousePosition);
-            Snip();                
-            IsSnipping = false;
+            if (!userIsSnipping) return;
+            RecalculateSnipRectangle(eventArgs);
+            var bitmap = TakeSnipAndCopyToClipBoard();
+            AddTextToClipBoardFrom(bitmap);
+            userIsSnipping = false;
         }
 
-        private async void Snip() {
-            using (var bitmap = BitmapWithSelectedRectangleSize()) {
-                using (var graphics = Graphics.FromImage(bitmap)) {
-                    SnipOf(bitmap.Size, graphics);
-                    AddImageToClipBoard(bitmap);
-                    var imageAsText = await GetTextFrom(bitmap);
-                    AddTextToClipBoard(imageAsText);
-                }
-            }
-        }
-
-        private Bitmap BitmapWithSelectedRectangleSize() {
-            var width = Convert.ToInt32(selectedRectangle.Width +  DeltaX);
-            var height = Convert.ToInt32(selectedRectangle.Height + DeltaY);
-            return new Bitmap(width, height);
-        }
-
-        private void SnipOf(Size bitmapSize, Graphics graphics) {
+        private Bitmap TakeSnipAndCopyToClipBoard() {
             Opacity = .0;
-            var x = Convert.ToInt32(selectedRectangle.X + DeltaX);
-            var y = Convert.ToInt32(selectedRectangle.Y + DeltaY);
-            graphics.CopyFromScreen(x, y, 0, 0, bitmapSize);
+            var bitmap = snip.Take();
             Opacity = 0.1;
+            ClipboardManager.AddImageToClipBoard(bitmap);
+            return bitmap;
         }
 
-        private async Task<string> GetTextFrom(Bitmap bitmap) {
+        private async void AddTextToClipBoardFrom(Bitmap bitmap) {
+            var text = await TextFrom(bitmap);
+            ClipboardManager.AddTextToClipBoard(text);
+        }
+
+        private async Task<string> TextFrom(Bitmap bitmap) {
             var imageInByteArray = ConvertToByteArray(bitmap);
             var text = await imageToTextConverter.Convert(imageInByteArray);
             return text;
         }
-
-        private static void AddImageToClipBoard(Bitmap bitmap) {
-            var hBitmap = bitmap.GetHbitmap();
-            var bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            Clipboard.SetImage(bitmapSource);
-        }
-
+        
         private static byte[] ConvertToByteArray(Bitmap bitmap) {
             var imageConverter = new ImageConverter();
             return (byte[])imageConverter.ConvertTo(bitmap, typeof(byte[]));
-        }
-
-        private static void AddTextToClipBoard(string text) {
-            Clipboard.SetText(text);
         }
         
     }
