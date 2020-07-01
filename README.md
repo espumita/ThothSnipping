@@ -4,7 +4,7 @@ ThothSnipping is a snipping tool with an OCR integration, builded in top of netc
 
 ### Features:
 
-* Text and Image added automatically to the Clipboard.
+* Text and image is added automatically to the clipboard.
 
 * Text recognition implementations:
     * [OCR.Space API](https://ocr.space/ocrapi)
