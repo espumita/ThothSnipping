@@ -1,6 +1,8 @@
 using System;
 using System.Drawing;
 using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using Size = System.Drawing.Size;
 
@@ -29,12 +31,11 @@ namespace ThothSnipping {
 
         public Bitmap Take() {
             var snipRectangle = Rectangle();
-            using (var bitmap = BitmapWithSelectedRectangleSize(snipRectangle)) {
-                using (var graphics = Graphics.FromImage(bitmap)) {
-                    SnipOf(bitmap.Size, graphics, snipRectangle);
-                    return bitmap;
-                }
+            var bitmap = BitmapWithSelectedRectangleSize(snipRectangle);
+            using (var graphics = Graphics.FromImage(bitmap)) {
+                SnipOf(bitmap.Size, graphics, snipRectangle);
             }
+            return bitmap;
         }
         
         private static Bitmap BitmapWithSelectedRectangleSize(Rect snipRectangle) {

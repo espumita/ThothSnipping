@@ -47,17 +47,19 @@ namespace ThothSnipping {
         }
 
         protected override void OnRender(DrawingContext drawingContext) {
+            if (snip == null) return;
             var pen = new Pen(Brushes.Red, 2);
             var rectangle = snip.Rectangle();
             drawingContext.DrawRectangle(Brushes.Transparent, pen, rectangle);
         }
 
-        protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
+        protected override async void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs eventArgs) {
             if (!userIsSnipping) return;
             RecalculateSnipRectangle(eventArgs);
             var bitmap = TakeSnipAndCopyToClipBoard();
-            AddTextToClipBoardFrom(bitmap);
+            await AddTextToClipBoardFrom(bitmap);
             userIsSnipping = false;
+            Application.Current.Shutdown();
         }
 
         private Bitmap TakeSnipAndCopyToClipBoard() {
@@ -68,7 +70,7 @@ namespace ThothSnipping {
             return bitmap;
         }
 
-        private async void AddTextToClipBoardFrom(Bitmap bitmap) {
+        private async Task AddTextToClipBoardFrom(Bitmap bitmap) {
             var text = await TextFrom(bitmap);
             ClipboardManager.AddTextToClipBoard(text);
         }
